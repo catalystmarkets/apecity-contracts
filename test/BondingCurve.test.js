@@ -11,6 +11,8 @@ describe.only("BondingCurve", function () {
     let otherAccounts;
     let reserveRatio;
     let ApeFactory;
+    // let uniswapV2Router02
+    // IUniswapV2Router02
 
     beforeEach(async function () {
         [owner, feeToSetter, feeTo, ...otherAccounts] = await ethers.getSigners();

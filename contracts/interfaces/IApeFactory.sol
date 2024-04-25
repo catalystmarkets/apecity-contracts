@@ -5,6 +5,7 @@ interface IApeFactory{
 
     function FEE_DENOMINATOR() external returns (uint256);
     function feeTo() external returns (address);
+    function liquidityFeeTo() external returns (address);
 
     event TokenCreated(address indexed token, address indexed bondingCurve, uint256 reserveRatio);
 
