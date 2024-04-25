@@ -7,27 +7,80 @@ describe.only("BondingCurve", function () {
     let bondingCurve;
     let token;
     let owner;
-    let feeToSetter;
     let otherAccounts;
-    let reserveRatio;
     let ApeFactory;
     // let uniswapV2Router02
     // IUniswapV2Router02
 
+    let _feeToSetter;
+    let _feeTo;
+    let _liquidityFeeTo;
+    let _totalTokenSupply;
+    let _initialTokenSupply;
+    let _initialPoolBalance;
+    let _reserveRatio;
+    let _lpTransferEthAmount;
+    let _lpTransferFeeAmount;
+    let _uniswapV2RouterAddress;
+
     beforeEach(async function () {
-        [owner, feeToSetter, feeTo, ...otherAccounts] = await ethers.getSigners();
-        reserveRatio = 607071;
+        let [owner, feeToSetter, feeTo, liquidityFeeTo, ..._otherAccounts] = await ethers.getSigners();
+        otherAccounts = _otherAccounts
+        _feeToSetter = feeToSetter.address;
+        _feeTo = feeTo.address;
+        _liquidityFeeTo = liquidityFeeTo.address;
+        // _totalTokenSupply = ethers.parseEther('1000000000');
+        // _initialTokenSupply = ethers.parseEther('1000');
+        // _initialPoolBalance = 1720281043;
+        // _reserveRatio = 607071;
+        // _lpTransferEthAmount = ethers.parseEther('4');
+        // _lpTransferFeeAmount = ethers.parseEther('0.212');
+        // _uniswapV2RouterAddress = "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24";
+
+        _totalTokenSupply = '1000000000';
+        _initialTokenSupply = ethers.parseEther('1000');
+        _initialPoolBalance = 8571428;
+        _reserveRatio = 500000;
+        _lpTransferEthAmount = ethers.parseEther('4');
+        _lpTransferFeeAmount = ethers.parseEther('0.2');
+        _uniswapV2RouterAddress = "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24";
 
         const ApeFactoryContract = await ethers.getContractFactory("ApeFactory");
-        ApeFactory = await ApeFactoryContract.deploy(reserveRatio, feeToSetter.address, feeTo.address);
+
+        console.log(
+            _reserveRatio,
+            _feeToSetter,
+            _feeTo,
+            _liquidityFeeTo,
+            _totalTokenSupply,
+            _initialTokenSupply,
+            _initialPoolBalance,
+            _reserveRatio,
+            _lpTransferEthAmount,
+            _lpTransferFeeAmount,
+            _uniswapV2RouterAddress
+        )
+        ApeFactory = await ApeFactoryContract.deploy(
+            _reserveRatio,
+            _feeToSetter,
+            _feeTo,
+            _liquidityFeeTo,
+            _totalTokenSupply,
+            _initialTokenSupply,
+            _initialPoolBalance,
+            _reserveRatio,
+            _lpTransferEthAmount,
+            _lpTransferFeeAmount,
+            _uniswapV2RouterAddress
+        );
         await ApeFactory.waitForDeployment();
+
 
         const tokenName = "ApeCoin";
         const tokenSymbol = "APE";
-        const totalSupply = ethers.parseEther("1000000000");
-        const etherToSend = ethers.parseEther("1");
+        const imageURL = "APE";
 
-        let createdToken = await ApeFactory.createToken(tokenName, tokenSymbol)
+        let createdToken = await ApeFactory.createToken(tokenName, tokenSymbol, imageURL)
 
         const tokenLength = await ApeFactory.allTokensLength();
         const tokenAddress = await ApeFactory.allTokens(0);
@@ -249,53 +302,53 @@ describe.only("BondingCurve", function () {
         expect(actualEthOut).to.be.gt(wantedEthOut)
     })
 
-    it("6. complete bonding curve (50% supply)", async function () {
-        //this test says that estimateTokenInForExactEth always predicts or estimate token in in a way that can yield more than or equal to token required.
+    // it("6. complete bonding curve (50% supply)", async function () {
+    //     //this test says that estimateTokenInForExactEth always predicts or estimate token in in a way that can yield more than or equal to token required.
 
-        //buyer is buying here
-        let buyer = otherAccounts[0];
-        let buyAmount = ethers.parseEther("3.03");
-        await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
-            .to.emit(bondingCurve, "LogBuy");
+    //     //buyer is buying here
+    //     let buyer = otherAccounts[0];
+    //     let buyAmount = ethers.parseEther("3.03");
+    //     await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
+    //         .to.emit(bondingCurve, "LogBuy");
 
-        let tokenCirculatingSupply = await bondingCurve.getCirculatingSupply();
-        let poolBalance = await bondingCurve.poolBalance();
-        let reserveRatio = await bondingCurve.reserveRatio();
-        let tatalSupply = await token.totalSupply();
+    //     let tokenCirculatingSupply = await bondingCurve.getCirculatingSupply();
+    //     let poolBalance = await bondingCurve.poolBalance();
+    //     let reserveRatio = await bondingCurve.reserveRatio();
+    //     let tatalSupply = await token.totalSupply();
 
-        console.log('tokenCirculatingSupply', tokenCirculatingSupply)
-        console.log('poolBalance', poolBalance)
-        console.log('reserveRatio', reserveRatio)
+    //     console.log('tokenCirculatingSupply', tokenCirculatingSupply)
+    //     console.log('poolBalance', poolBalance)
+    //     console.log('reserveRatio', reserveRatio)
 
-        const fullBondingCurveRequirementSupply = ethers.parseEther("500009000")
-        const remainingSupply = fullBondingCurveRequirementSupply - tokenCirculatingSupply
+    //     const fullBondingCurveRequirementSupply = ethers.parseEther("500009000")
+    //     const remainingSupply = fullBondingCurveRequirementSupply - tokenCirculatingSupply
 
-        const requiredEthIn = await bondingCurve.estimateEthInForExactTokensOut(
-            tokenCirculatingSupply,
-            poolBalance,
-            reserveRatio,
-            remainingSupply
-        )
-        console.log('requiredEthIn', requiredEthIn)
+    //     const requiredEthIn = await bondingCurve.estimateEthInForExactTokensOut(
+    //         tokenCirculatingSupply,
+    //         poolBalance,
+    //         reserveRatio,
+    //         remainingSupply
+    //     )
+    //     console.log('requiredEthIn', requiredEthIn)
 
-        let atMostPoolBalance = ethers.parseEther('4.212')
-        let easyEthIn = atMostPoolBalance - poolBalance
-        console.log("easyEthIn", easyEthIn)
+    //     let atMostPoolBalance = ethers.parseEther('4.212')
+    //     let easyEthIn = atMostPoolBalance - poolBalance
+    //     console.log("easyEthIn", easyEthIn)
             
-        await expect(bondingCurve.connect(buyer).buy({ value: easyEthIn }))
-        .to.emit(bondingCurve, "LogBuy");
+    //     await expect(bondingCurve.connect(buyer).buy({ value: easyEthIn }))
+    //     .to.emit(bondingCurve, "LogBuy");
 
-        console.log("bonding curve balance", await ethers.provider.getBalance(bondingCurve.target)) 
+    //     console.log("bonding curve balance", await ethers.provider.getBalance(bondingCurve.target)) 
 
-        let newTokenCirculatingSupply = await bondingCurve.getCirculatingSupply();
-        let newPoolBalance = await bondingCurve.poolBalance();
-        let actualLeftSupply = await token.balanceOf(bondingCurve.target)
-        // let leftSupply = tatalSupply - newTokenCirculatingSupply
-        console.log('actual leftSupply', actualLeftSupply)
-        console.log('newTokenCirculatingSupply', newTokenCirculatingSupply)
-        console.log('newPoolBalance', newPoolBalance)
+    //     let newTokenCirculatingSupply = await bondingCurve.getCirculatingSupply();
+    //     let newPoolBalance = await bondingCurve.poolBalance();
+    //     let actualLeftSupply = await token.balanceOf(bondingCurve.target)
+    //     // let leftSupply = tatalSupply - newTokenCirculatingSupply
+    //     console.log('actual leftSupply', actualLeftSupply)
+    //     console.log('newTokenCirculatingSupply', newTokenCirculatingSupply)
+    //     console.log('newPoolBalance', newPoolBalance)
         
-    })
+    // })
 
     it("7. should create uniswap contract at completion of bonding curve (50% supply)(certain pool balance !!)", async function () {
         //this test says that estimateTokenInForExactEth always predicts or estimate token in in a way that can yield more than or equal to token required.

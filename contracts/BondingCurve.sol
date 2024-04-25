@@ -7,10 +7,13 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IApeFactory} from "./interfaces/IApeFactory.sol";
 import {IUniswapV2Router02} from "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import {IUniswapV2Factory} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
+import {IUniswapV2Pair} from "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
 
 import "hardhat/console.sol";
 
-contract BondingCurve is ApeFormula {
+contract BondingCurve is ApeFormula, ReentrancyGuard {
     // mapping(address => uint256) public poolBalances;
     uint256 public poolBalance;
     uint256 public reserveRatio;
@@ -40,7 +43,10 @@ contract BondingCurve is ApeFormula {
         uint256 indexed reward,
         address indexed seller
     );
-    event BondingCurveComplete(address indexed tokenAddress, address indexed liquidityPoolAddress);
+    event BondingCurveComplete(
+        address indexed tokenAddress,
+        address indexed liquidityPoolAddress
+    );
 
     constructor(
         address _tokenAddress,
@@ -68,14 +74,15 @@ contract BondingCurve is ApeFormula {
 
     function getCirculatingSupply() public view returns (uint256) {
         uint256 totalSupply = token.totalSupply();
-        uint256 balanceOfBondingCurve = token.balanceOf(
-            address(this)
-        );
+        uint256 balanceOfBondingCurve = token.balanceOf(address(this));
         return totalSupply - balanceOfBondingCurve + INITIAL_TOKEN_SUPPLY;
     }
-    // TODO: create new pool of token and eth
 
-    function buy() public payable returns (bool) {
+    function deActivateBondingCurve() nonReentrant internal {
+        active = false;
+    }
+
+    function buy() public payable nonReentrant returns (bool) {
         require(active, "bonding curve must be active");
         require(msg.value > 0);
 
@@ -94,19 +101,10 @@ contract BondingCurve is ApeFormula {
             netValue = usableMsgValue - fee;
             refund = msg.value - usableMsgValue;
             bondingCurveComplete = true;
-
-            console.log("usableMsgValue", usableMsgValue);
-            console.log("fee", fee);
-            console.log("netValue", netValue);
-            console.log("refund", refund);
+            deActivateBondingCurve();
         }
 
         uint256 currentCirculatingSupply = getCirculatingSupply();
-
-        console.log("currentCirculatingSupply", currentCirculatingSupply);
-        console.log("poolBalance", poolBalance);
-        console.log("reserveRatio", reserveRatio);
-        console.log("netValue", netValue);
 
         uint256 tokensToTransfer = calculatePurchaseReturn(
             currentCirculatingSupply,
@@ -116,11 +114,11 @@ contract BondingCurve is ApeFormula {
         );
         console.log("tokensToTransfer", tokensToTransfer);
 
+        poolBalance += netValue;
         require(
             token.transfer(msg.sender, tokensToTransfer),
             "ERC20 transfer failed"
         );
-        poolBalance += netValue;
 
         // Transfer fees to the fee recipient
         address feeTo = factory.feeTo();
@@ -132,15 +130,13 @@ contract BondingCurve is ApeFormula {
         emit LogBuy(tokensToTransfer, msg.value, msg.sender);
 
         if (bondingCurveComplete) {
-            console.log("address(this).balance",address(this).balance);
             completeBondingCurve();
-            console.log("address(this).balance",address(this).balance);
             payable(factory.liquidityFeeTo()).transfer(address(this).balance);
         }
         return true;
     }
 
-    function sell(uint256 sellAmount) public returns (bool) {
+    function sell(uint256 sellAmount) public nonReentrant returns (bool) {
         require(active, "bonding curve must be active");
         require(sellAmount > 0);
 
@@ -152,8 +148,7 @@ contract BondingCurve is ApeFormula {
             reserveRatio,
             sellAmount
         );
-// 10000.021199998279718957
-// 10000.211999998279718957
+
         require(
             ethAmount <= poolBalance,
             "Bonding curve does not have sufficient funds"
@@ -163,16 +158,10 @@ contract BondingCurve is ApeFormula {
         uint256 fee = ethAmount / FEE_DENOMINATOR;
         uint256 netValue = ethAmount - fee;
 
-        payable(msg.sender).transfer(netValue);
         poolBalance -= ethAmount;
+        payable(msg.sender).transfer(netValue);
 
-        require(
-           token.transferFrom(
-                msg.sender,
-                address(this),
-                sellAmount
-            )
-        );
+        require(token.transferFrom(msg.sender, address(this), sellAmount));
 
         // Transfer fees to the fee recipient
         address feeTo = factory.feeTo();
@@ -182,9 +171,8 @@ contract BondingCurve is ApeFormula {
         return true;
     }
 
-    function completeBondingCurve()
-        internal
-    {
+    function completeBondingCurve() internal nonReentrant {
+
         uint256 ethAmountToSendLP = LP_TRANSFER_ETH_AMOUNT;
         uint256 tokenAmountToSendLP = token.balanceOf(address(this));
 
@@ -192,98 +180,35 @@ contract BondingCurve is ApeFormula {
             token.approve(address(uniswapV2Router), tokenAmountToSendLP),
             "Approve failed"
         );
-        require(address(this).balance >= ethAmountToSendLP, "Insufficient ETH balance");
+        require(
+            address(this).balance >= ethAmountToSendLP,
+            "Insufficient ETH balance"
+        );
 
-        uniswapV2Router.addLiquidityETH{
-            value: ethAmountToSendLP
-        }(address(token), tokenAmountToSendLP, 0, 0, address(this), block.timestamp);
-
+        uniswapV2Router.addLiquidityETH{value: ethAmountToSendLP}(
+            address(token),
+            tokenAmountToSendLP,
+            0,
+            0,
+            address(this),
+            block.timestamp
+        );
 
         // Burn the LP tokens
         address WETH = uniswapV2Router.WETH();
-        IUniswapV2Factory uniswapV2Factory = IUniswapV2Factory(uniswapV2Router.factory());
+        IUniswapV2Factory uniswapV2Factory = IUniswapV2Factory(
+            uniswapV2Router.factory()
+        );
         IERC20 lpToken = IERC20(uniswapV2Factory.getPair(WETH, address(token)));
-        
-        bool success = lpToken.transfer(address(0), lpToken.balanceOf(address(this)));
+
+        bool success = lpToken.transfer(
+            address(0),
+            lpToken.balanceOf(address(this))
+        );
         require(success, "Liquidity Pool burning failed");
 
-        active = false;
         emit BondingCurveComplete(address(token), address(lpToken));
     }
-
-
-    // function transferLiquidityToLP(uint256 ethAmount)
-    //     internal
-    // {
-    //     uint256 tokenAmount = token.balanceOf(address(this));
-
-    //     require(
-    //         token.approve(address(uniswapV2Router), tokenAmount),
-    //         "Approve failed"
-    //     );
-    //     require(address(this).balance >= ethAmount, "Insufficient ETH balance");
-
-    //     (amountToken, amountETH, liquidity) = uniswapV2Router.addLiquidityETH{
-    //         value: ethAmount
-    //     }(tokenAddress, tokenAmount, 0, 0, address(this), block.timestamp);
-    // }
-
-    // function burnLPTokens()
-    // internal
-    // returns(address)
-    // {
-    //     // Burn the LP tokens
-    //     address WETH = uniswapV2Router.WETH();
-    //     IUniswapV2Factory uniswapV2Factory = IUniswapV2Factory(uniswapV2Router.factory());
-    //     IERC20 lpToken = IERC20(uniswapV2Factory.getPair(WETH, tokenAddress));
-
-        
-    //     bool success = lpToken.transfer(address(0), lpToken.balanceOf(address(this)));
-    //     require(success, "Liquidity Pool burning failed");
-
-    //     return address(lpToken);
-    // }
-
-    //     function transferLiquidityToUniswap() internal view returns(bool){
-    //         uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
-
-    //         // Approve the Uniswap router to spend the token balance
-    //         // IERC20(tokenAddress).approve(address(uniswapV2Router), tokenBalance);
-    //         // console.log("hahaha");
-    //         // address uniswapFactoryAddress = uniswapV2Router.factory();
-    //         console.log("yyyeee");
-
-    //         // address uniswapFactoryAddress = IUniswapV2Router02(address(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24)).factory();
-    //     // Initialize the uniswapV2Router variable
-    //     // IUniswapV2Router02 uniswapV2Router = IUniswapV2Router02(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24);
-
-    //     address uniswapFactoryAddress = uniswapV2Router.factory();
-    //     console.log("uniswapFactoryAddress", uniswapFactoryAddress);
-    //     // (bool success, bytes memory data) = address(uniswapV2Router).call(abi.encodeWithSignature("factory()"));
-    //     // require(success, "Call to Uniswap router failed");
-    //     // console.log("sss");
-    //     // address uniswapFactoryAddress = abi.decode(data, (address));
-    //     // console.log("uniswapFactoryAddress", uniswapFactoryAddress);
-
-    // // (bool success, bytes memory data) = address(0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24).call(abi.encodeWithSignature("factory()"));
-    // // require(success, "Factory address retrieval failed");
-    // // // console.log("data",data);
-
-    // // address uniswapFactoryAddress = abi.decode(data, (address));
-    //         console.log("uniswapFactoryAddress",uniswapFactoryAddress);
-    //         console.log("eee");
-    //         // console.log("uniswapFactoryAddress",uniswapFactoryAddress);
-    //         // // Add liquidity to Uniswap
-    //         // uniswapV2Router.addLiquidityETH{value: 4 ether}(
-    //         //     tokenAddress,
-    //         //     tokenBalance,
-    //         //     0, // Slippage tolerance for token amount
-    //         //     0, // Slippage tolerance for ETH amount
-    //         //     address(this),
-    //         //     block.timestamp + 1800 // Deadline for the transaction (e.g., 30 minutes from now)
-    //         // );
-    //         return true;
-    //     }
 
     function amountToCompleteBondingCurve() public view returns (uint256) {
         return LP_TRANSFER_ETH_AMOUNT + LP_TRANSFER_FEE_AMOUNT - poolBalance;

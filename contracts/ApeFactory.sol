@@ -74,12 +74,14 @@ contract ApeFactory is Ownable {
 
     function createToken(
         string memory name,
-        string memory symbol
+        string memory symbol,
+        string memory imageURL
     ) external returns (address) {
         ERC20FixedSupply token = new ERC20FixedSupply(
             name,
             symbol,
-            TOTAL_TOKEN_SUPPLY
+            TOTAL_TOKEN_SUPPLY,
+            imageURL
         );
         BondingCurve bondingCurve = new BondingCurve(
             address(token),

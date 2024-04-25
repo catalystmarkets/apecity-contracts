@@ -16,41 +16,68 @@ describe('ApeFormulaExperiment', () => {
     });
 
     it('should estimate price for token amount correctly', async () => {
-        const allReserveRatios = ['333333', '607071']
+        const allReserveRatios = ['333333', '607071','500000']
         const units = {
             'initialSupply': 'APE',
             'initialPoolBalance': 'Gwei',
             'ethersIn': 'Ether',
             'estimate': 'APE'
         }
+
         const testCases = [
             {
                 initialSupply: ethers.parseEther('1000'),
-                initialPoolBalance: '1720281043',
+                initialPoolBalance: '8571428',
                 ethersIn: ethers.parseEther('1'),
             },
             {
                 initialSupply: ethers.parseEther('1000'),
-                initialPoolBalance: '1720281043',
+                initialPoolBalance: '8571428',
                 ethersIn: ethers.parseEther('2'),
             },
             {
                 initialSupply: ethers.parseEther('1000'),
-                initialPoolBalance: '1720281043',
+                initialPoolBalance: '8571428',
                 ethersIn: ethers.parseEther('3'),
             },
             {
                 initialSupply: ethers.parseEther('1000'),
-                initialPoolBalance: '1720281043',
+                initialPoolBalance: '8571428',
                 ethersIn: ethers.parseEther('4'),
             },
             {
                 initialSupply: ethers.parseEther('1000'),
-                initialPoolBalance: '1720281043',
-                ethersIn: ethers.parseEther('4.2001'),
+                initialPoolBalance: '8571428',
+                ethersIn: ethers.parseEther('4.2'),
             },
         ];
-        // 5000062272558704763069
+        // const testCases = [
+        //     {
+        //         initialSupply: ethers.parseEther('1000'),
+        //         initialPoolBalance: '1720281043',
+        //         ethersIn: ethers.parseEther('1'),
+        //     },
+        //     {
+        //         initialSupply: ethers.parseEther('1000'),
+        //         initialPoolBalance: '1720281043',
+        //         ethersIn: ethers.parseEther('2'),
+        //     },
+        //     {
+        //         initialSupply: ethers.parseEther('1000'),
+        //         initialPoolBalance: '1720281043',
+        //         ethersIn: ethers.parseEther('3'),
+        //     },
+        //     {
+        //         initialSupply: ethers.parseEther('1000'),
+        //         initialPoolBalance: '1720281043',
+        //         ethersIn: ethers.parseEther('4'),
+        //     },
+        //     {
+        //         initialSupply: ethers.parseEther('1000'),
+        //         initialPoolBalance: '1720281043',
+        //         ethersIn: ethers.parseEther('4.2001'),
+        //     },
+        // ];
         // const testCases = [
         //     {
         //         initialSupply: ethers.parseEther('1000000'),
