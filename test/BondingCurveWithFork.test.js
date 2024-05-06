@@ -44,7 +44,7 @@ describe.only("BondingCurve", function () {
         _initialPoolBalance = 8571428;
         _reserveRatio = 500000;
         _lpTransferEthAmount = ethers.parseEther('4');
-        _lpTransferFeeAmount = ethers.parseEther('0.2');
+        _lpTransferFeeAmount = ethers.parseEther('0.200001');
         _uniswapV2RouterAddress = "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24";
 
         const ApeFactoryContract = await ethers.getContractFactory("ApeFactory");
@@ -57,13 +57,11 @@ describe.only("BondingCurve", function () {
             _totalTokenSupply,
             _initialTokenSupply,
             _initialPoolBalance,
-            _reserveRatio,
             _lpTransferEthAmount,
             _lpTransferFeeAmount,
             _uniswapV2RouterAddress
         )
         ApeFactory = await ApeFactoryContract.deploy(
-            _reserveRatio,
             _feeToSetter,
             _feeTo,
             _liquidityFeeTo,
@@ -76,6 +74,16 @@ describe.only("BondingCurve", function () {
             _uniswapV2RouterAddress
         );
         await ApeFactory.waitForDeployment();
+
+
+        await ApeFactory.setBondingCurveCurveVariables(
+            _totalTokenSupply,
+            _initialTokenSupply,
+            _initialPoolBalance,
+            _reserveRatio,
+            _lpTransferEthAmount,
+            _lpTransferFeeAmount
+        )
 
         const tokenName = "ApeCoin";
         const tokenSymbol = "APE";

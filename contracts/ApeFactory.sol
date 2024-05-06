@@ -15,21 +15,19 @@ contract ApeFactory is Ownable {
     mapping(address => uint256) public getReserveRatio;
     address[] public allTokens;
 
-    uint256 public reserveRatio;
-
     address public feeTo;
     address public liquidityFeeTo;
     address public feeToSetter;
 
     uint256 public FEE_DENOMINATOR = 101;
 
-    uint256 immutable TOTAL_TOKEN_SUPPLY;
-    uint256 immutable INITIAL_TOKEN_SUPPLY;
-    uint256 immutable INITIAL_POOL_BALANCE;
-    uint256 immutable STANDARD_RESERVE_RATIO;
-    uint256 immutable LP_TRANSFER_ETH_AMOUNT;
-    uint256 immutable LP_TRANSFER_FEE_AMOUNT;
-    address immutable UNISWAPV2_ROUTER_ADDRESS;
+    uint256 private TOTAL_TOKEN_SUPPLY;
+    uint256 private INITIAL_TOKEN_SUPPLY;
+    uint256 private INITIAL_POOL_BALANCE;
+    uint256 private STANDARD_RESERVE_RATIO;
+    uint256 private LP_TRANSFER_ETH_AMOUNT;
+    uint256 private LP_TRANSFER_FEE_AMOUNT;
+    address private UNISWAPV2_ROUTER_ADDRESS;
 
     event TokenCreated(
         address indexed token,
@@ -38,7 +36,6 @@ contract ApeFactory is Ownable {
     );
 
     constructor(
-        uint256 _reserveRatio,
         address _feeToSetter,
         address _feeTo,
         address _liquidityFeeTo,
@@ -50,7 +47,6 @@ contract ApeFactory is Ownable {
         uint256 _lpTransferFeeAmount,
         address _uniswapV2RouterAddress
     ) Ownable(msg.sender) {
-        reserveRatio = _reserveRatio;
         feeToSetter = _feeToSetter;
         feeTo = _feeTo;
         liquidityFeeTo = _liquidityFeeTo;
@@ -68,8 +64,21 @@ contract ApeFactory is Ownable {
         return allTokens.length;
     }
 
-    function setReserveRatio(uint256 _reserveRatio) external onlyOwner {
-        reserveRatio = _reserveRatio;
+    function getTokensInRange(
+        uint256 startIndex,
+        uint256 endIndex
+    ) external view returns (address[] memory) {
+        require(startIndex < endIndex, "Invalid range");
+        require(endIndex <= allTokens.length, "End index out of bounds");
+
+        uint256 length = endIndex - startIndex;
+        address[] memory tokensInRange = new address[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            tokensInRange[i] = allTokens[startIndex + i];
+        }
+
+        return tokensInRange;
     }
 
     function createToken(
@@ -85,33 +94,34 @@ contract ApeFactory is Ownable {
         );
         BondingCurve bondingCurve = new BondingCurve(
             address(token),
-            reserveRatio,
+            STANDARD_RESERVE_RATIO,
             INITIAL_TOKEN_SUPPLY,
             INITIAL_POOL_BALANCE,
             LP_TRANSFER_ETH_AMOUNT,
             LP_TRANSFER_FEE_AMOUNT,
             UNISWAPV2_ROUTER_ADDRESS
         );
-        //         BondingCurve bondingCurve = new BondingCurve(
-        //     address(token),
-        //     reserveRatio,
-        //     1000 * 10 ** 18,
-        //     1720281043,
-        //     4000e15,
-        //     212e15,
-        //     0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24
-        // );
+
         require(
             token.transfer(address(bondingCurve), token.totalSupply()),
             "ERC20 transfer failed"
         );
 
         getBondingCurve[address(token)] = address(bondingCurve);
-        getReserveRatio[address(bondingCurve)] = reserveRatio;
+        getReserveRatio[address(bondingCurve)] = STANDARD_RESERVE_RATIO;
         allTokens.push(address(token));
 
-        emit TokenCreated(address(token), address(bondingCurve), reserveRatio);
+        emit TokenCreated(
+            address(token),
+            address(bondingCurve),
+            STANDARD_RESERVE_RATIO
+        );
         return address(token);
+    }
+
+    function setFeeToSetter(address _feeToSetter) external {
+        require(msg.sender == feeToSetter, "APEV1: FORBIDDEN");
+        feeToSetter = _feeToSetter;
     }
 
     function setFeeTo(address _feeTo) external {
@@ -119,8 +129,35 @@ contract ApeFactory is Ownable {
         feeTo = _feeTo;
     }
 
-    function setFeeToSetter(address _feeToSetter) external {
+    function setLiquidityFeeTo(address _liquidityFeeTo) external {
         require(msg.sender == feeToSetter, "APEV1: FORBIDDEN");
-        feeToSetter = _feeToSetter;
+        liquidityFeeTo = _liquidityFeeTo;
+    }
+
+    function setfeeDenominator(uint256 _feeDenominator) external {
+        require(msg.sender == feeToSetter, "APEV1: FORBIDDEN");
+        FEE_DENOMINATOR = _feeDenominator;
+    }
+
+    function setBondingCurveCurveVariables(
+        uint256 _totalTokenSupply,
+        uint256 _initialTokenSupply,
+        uint256 _initialPoolBalance,
+        uint256 _standardReserveRatio,
+        uint256 _lpTransferEthAmount,
+        uint256 _lpTransferFeeAmount
+    ) external onlyOwner {
+        TOTAL_TOKEN_SUPPLY = _totalTokenSupply;
+        INITIAL_TOKEN_SUPPLY = _initialTokenSupply;
+        INITIAL_POOL_BALANCE = _initialPoolBalance;
+        STANDARD_RESERVE_RATIO = _standardReserveRatio;
+        LP_TRANSFER_ETH_AMOUNT = _lpTransferEthAmount;
+        LP_TRANSFER_FEE_AMOUNT = _lpTransferFeeAmount;
+    }
+
+    function setLPRouterAddress(
+        address _uniswapV2RouterAddress
+    ) external onlyOwner {
+        UNISWAPV2_ROUTER_ADDRESS = _uniswapV2RouterAddress;
     }
 }

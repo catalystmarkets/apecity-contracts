@@ -18,19 +18,15 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
     uint256 public poolBalance;
     uint256 public reserveRatio;
 
-    IERC20 public token;
+    IERC20 private token;
 
     uint256 private immutable INITIAL_POOL_BALANCE;
     uint256 private immutable INITIAL_TOKEN_SUPPLY;
     uint256 private immutable LP_TRANSFER_ETH_AMOUNT;
     uint256 private immutable LP_TRANSFER_FEE_AMOUNT;
 
-    // address public constant uniswapV2Router = 0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24;
-
     IUniswapV2Router02 public uniswapV2Router;
-
     IApeFactory public factory;
-
     bool public active = true;
 
     event LogBuy(
@@ -78,7 +74,7 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
         return totalSupply - balanceOfBondingCurve + INITIAL_TOKEN_SUPPLY;
     }
 
-    function deActivateBondingCurve() nonReentrant internal {
+    function deActivateBondingCurve() internal {
         active = false;
     }
 
@@ -171,7 +167,7 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
         return true;
     }
 
-    function completeBondingCurve() internal nonReentrant {
+    function completeBondingCurve() internal {
 
         uint256 ethAmountToSendLP = LP_TRANSFER_ETH_AMOUNT;
         uint256 tokenAmountToSendLP = token.balanceOf(address(this));

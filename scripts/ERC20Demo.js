@@ -9,6 +9,7 @@ async function main() {
 
   console.log("erc20Demo deployed to:", erc20Demo.target);
 }
+
 // npx hardhat run scripts / ERC20Demo.js
 main()
   .then(() => process.exit(0))
@@ -16,3 +17,9 @@ main()
     console.error(error);
     process.exit(1);
   });
+
+
+//     `
+// TENDERLY_AUTOMATIC_VERIFICATION=true \
+// npx hardhat run scripts/ERC20Demo.js --network baseTenderly
+//     `

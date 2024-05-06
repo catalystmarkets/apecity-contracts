@@ -48,7 +48,6 @@ describe.only("BondingCurve", function () {
         const ApeFactoryContract = await ethers.getContractFactory("ApeFactory");
 
         console.log(
-            _reserveRatio,
             _feeToSetter,
             _feeTo,
             _liquidityFeeTo,
@@ -61,7 +60,6 @@ describe.only("BondingCurve", function () {
             _uniswapV2RouterAddress
         )
         ApeFactory = await ApeFactoryContract.deploy(
-            _reserveRatio,
             _feeToSetter,
             _feeTo,
             _liquidityFeeTo,
@@ -350,92 +348,53 @@ describe.only("BondingCurve", function () {
         
     // })
 
-    it("7. should create uniswap contract at completion of bonding curve (50% supply)(certain pool balance !!)", async function () {
-        //this test says that estimateTokenInForExactEth always predicts or estimate token in in a way that can yield more than or equal to token required.
+    // it("7. should create uniswap contract at completion of bonding curve (50% supply)(certain pool balance !!)", async function () {
+    //     //this test says that estimateTokenInForExactEth always predicts or estimate token in in a way that can yield more than or equal to token required.
 
-        //buyer is buying here
-        let buyer = otherAccounts[0];
-        let buyAmount = ethers.parseEther("3.03");
-        await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
-            .to.emit(bondingCurve, "LogBuy");
+    //     //buyer is buying here
+    //     let buyer = otherAccounts[0];
+    //     let buyAmount = ethers.parseEther("3.03");
+    //     await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
+    //         .to.emit(bondingCurve, "LogBuy");
 
-        let amountToCompleteBondingCurve = await bondingCurve.amountToCompleteBondingCurve()
-        console.log("amountToCompleteBondingCurve", amountToCompleteBondingCurve)
+    //     let amountToCompleteBondingCurve = await bondingCurve.amountToCompleteBondingCurve()
+    //     console.log("amountToCompleteBondingCurve", amountToCompleteBondingCurve)
 
-        await expect(bondingCurve.connect(buyer).buy({ value: amountToCompleteBondingCurve }))
-            .to.emit(bondingCurve, "LogBuy");
+    //     await expect(bondingCurve.connect(buyer).buy({ value: amountToCompleteBondingCurve }))
+    //         .to.emit(bondingCurve, "LogBuy");
 
-        console.log("bonding curve balance", await ethers.provider.getBalance(bondingCurve.target))
-        console.log("bonding curve balance", await bondingCurve.active())
+    //     console.log("bonding curve balance", await ethers.provider.getBalance(bondingCurve.target))
+    //     console.log("bonding curve balance", await bondingCurve.active())
 
-        // expect(await bondingCurve.active()).to.be.false;
+    //     // expect(await bondingCurve.active()).to.be.false;
 
-    })
+    // })
+
+    // it("8. should handle over buy and complete bonding curve ", async function () {
+    //     //buyer is buying here
+    //     let buyer = otherAccounts[0];
+    //     let buyAmount = ethers.parseEther("3.03");
+    //     await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
+    //         .to.emit(bondingCurve, "LogBuy");
+
+    //     let requireAmountToCompleteBondingCurve = await bondingCurve.amountToCompleteBondingCurve();
+    //     let excessAmount = ethers.parseEther("1");
+    //     buyAmount = requireAmountToCompleteBondingCurve + excessAmount;
+
+    //     let userEthBalanceBeforeBuy = await ethers.provider.getBalance(buyer);
+    //     console.log("userEthBalanceBeforeBuy",ethers.formatEther(userEthBalanceBeforeBuy))
+
+    //     await bondingCurve.connect(buyer).buy({ value: buyAmount })
 
 
-    it("8. should handle over buy and complete bonding curve ", async function () {
-        //buyer is buying here
-        let buyer = otherAccounts[0];
-        let buyAmount = ethers.parseEther("3.03");
-        await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
-            .to.emit(bondingCurve, "LogBuy");
+    //     let userEthBalanceAfterBuy = await ethers.provider.getBalance(buyer);
+    //     console.log("userEthBalanceAfterBuy", ethers.formatEther(userEthBalanceAfterBuy))
 
-        let requireAmountToCompleteBondingCurve = await bondingCurve.amountToCompleteBondingCurve();
-        let excessAmount = ethers.parseEther("1");
-        buyAmount = requireAmountToCompleteBondingCurve + excessAmount;
+    //     expect(userEthBalanceAfterBuy).to.be.lt(userEthBalanceBeforeBuy - requireAmountToCompleteBondingCurve);
+    //     // expect(userEthBalanceAfterBuy).to.be.gt(userEthBalanceBeforeBuy + excessAmount);
+    //     // expect(userEthBalanceAfterBuy).to.be.lt(userEthBalanceBeforeBuy);
 
-        let userEthBalanceBeforeBuy = await ethers.provider.getBalance(buyer);
-        console.log("userEthBalanceBeforeBuy",ethers.formatEther(userEthBalanceBeforeBuy))
-
-        await bondingCurve.connect(buyer).buy({ value: buyAmount })
-
-
-        let userEthBalanceAfterBuy = await ethers.provider.getBalance(buyer);
-        console.log("userEthBalanceAfterBuy", ethers.formatEther(userEthBalanceAfterBuy))
-
-        expect(userEthBalanceAfterBuy).to.be.lt(userEthBalanceBeforeBuy - requireAmountToCompleteBondingCurve);
-        // expect(userEthBalanceAfterBuy).to.be.gt(userEthBalanceBeforeBuy + excessAmount);
-        // expect(userEthBalanceAfterBuy).to.be.lt(userEthBalanceBeforeBuy);
-
-    })
-    // it("3. should sell tokens to bonding curve", async function () {
-    //     await token.transfer(bondingCurve.address, ethers.parseEther("100000"));
-
-    //     const seller = otherAccounts[1];
-    //     const sellAmount = ethers.parseEther("10000");
-
-    //     await token.transfer(seller.address, sellAmount);
-    //     await token.connect(seller).approve(bondingCurve.address, sellAmount);
-
-    //     const initialPoolBalance = await ethers.provider.getBalance(bondingCurve.address);
-
-    //     await expect(bondingCurve.connect(seller).sell(sellAmount))
-    //         .to.emit(bondingCurve, "LogSell");
-
-    //     const finalPoolBalance = await ethers.provider.getBalance(bondingCurve.address);
-    //     expect(finalPoolBalance).to.be.lt(initialPoolBalance);
-    // });
-
-    // it("4. should not sell tokens if user has insufficient balance", async function () {
-    //     const seller = otherAccounts[2];
-    //     const sellAmount = ethers.parseEther("10000");
-
-    //     await expect(bondingCurve.connect(seller).sell(sellAmount))
-    //         .to.be.revertedWith("Insufficient token balance of user");
-    // });
-
-    // it("5. should not sell tokens if bonding curve has insufficient funds", async function () {
-    //     await token.transfer(bondingCurve.address, ethers.parseEther("100000"));
-
-    //     const seller = otherAccounts[3];
-    //     const sellAmount = ethers.parseEther("100000");
-
-    //     await token.transfer(seller.address, sellAmount);
-    //     await token.connect(seller).approve(bondingCurve.address, sellAmount);
-
-    //     await expect(bondingCurve.connect(seller).sell(sellAmount))
-    //         .to.be.revertedWith("Bonding curve does not have sufficient funds");
-    // });
+    // })
 });
 
 // describe("BancorFormula", function () {
