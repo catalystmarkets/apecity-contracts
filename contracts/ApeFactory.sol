@@ -64,33 +64,33 @@ contract ApeFactory is Ownable {
         return allTokens.length;
     }
 
-    function getTokensInRange(
-        uint256 startIndex,
-        uint256 endIndex
-    ) external view returns (address[] memory) {
-        require(startIndex < endIndex, "Invalid range");
-        require(endIndex <= allTokens.length, "End index out of bounds");
+    // function getTokensInRange(
+    //     uint256 startIndex,
+    //     uint256 endIndex
+    // ) external view returns (address[] memory) {
+    //     require(startIndex < endIndex, "Invalid range");
+    //     require(endIndex <= allTokens.length, "End index out of bounds");
 
-        uint256 length = endIndex - startIndex;
-        address[] memory tokensInRange = new address[](length);
+    //     uint256 length = endIndex - startIndex;
+    //     address[] memory tokensInRange = new address[](length);
 
-        for (uint256 i = 0; i < length; i++) {
-            tokensInRange[i] = allTokens[startIndex + i];
-        }
+    //     for (uint256 i = 0; i < length; i++) {
+    //         tokensInRange[i] = allTokens[startIndex + i];
+    //     }
 
-        return tokensInRange;
-    }
+    //     return tokensInRange;
+    // }
 
     function createToken(
         string memory name,
         string memory symbol,
-        string memory imageURL
+        string memory tokenURI
     ) external returns (address) {
         ERC20FixedSupply token = new ERC20FixedSupply(
             name,
             symbol,
             TOTAL_TOKEN_SUPPLY,
-            imageURL
+            tokenURI
         );
         BondingCurve bondingCurve = new BondingCurve(
             address(token),

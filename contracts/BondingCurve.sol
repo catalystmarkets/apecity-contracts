@@ -123,7 +123,8 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
         if (refund > 0) {
             payable(msg.sender).transfer(refund);
         }
-        emit LogBuy(tokensToTransfer, msg.value, msg.sender);
+        // emit LogBuy(tokensToTransfer, msg.value, msg.sender);
+        emit LogBuy(tokensToTransfer, netValue, msg.sender);
 
         if (bondingCurveComplete) {
             completeBondingCurve();

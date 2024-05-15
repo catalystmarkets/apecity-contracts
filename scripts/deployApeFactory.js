@@ -4,6 +4,9 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
+    // const _tokenURI = "https://ipfs.io/ipfs/"
+    // const hash = "Qma5qWGCsB9CPLFxp6DmrzvwHGWfmQUWnYA63KPbWZ8iVj"
+
     // Replace these values with your desired parameters
     const _feeToSetter = deployer.address;
     const _feeTo = "0xdd0D4b40D8dCfB8741634b7432f53D36EAc1792B";
@@ -55,14 +58,17 @@ main()
 // npx hardhat run scripts/deployApeFactory.js --network baseTenderly
 //     `
 
-
 // "npx hardhat run scripts/deployApeFactory.js --network hardhat"
 // "npx hardhat run scripts/deployApeFactory.js --network baseSepolia"
 // "npx hardhat run scripts/deployApeFactory.js --network baseTenderly"
 // "npx hardhat run scripts/deployApeFactory.js --network localhost"
+
+// "npx hardhat run scripts/deployApeFactory.js --network baseIdTenderly"
+// 0x7722b77e691cea11047f030f1b128432a1a6ffca
 
 // base-tenderly ape factory address
 // 0xDeca67A17195Db554BBa847AD8b5AcBb18e2C8a3
 
 //localhost factory address
 // 0x5FbDB2315678afecb367f032d93F642f64180aa3
+// 0x43bbaC1E810E19C1608a26626FCc04D45f5918f5
