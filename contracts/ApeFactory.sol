@@ -85,7 +85,7 @@ contract ApeFactory is Ownable {
         string memory name,
         string memory symbol,
         string memory tokenURI
-    ) external returns (address) {
+    ) external payable returns (address) {
         ERC20FixedSupply token = new ERC20FixedSupply(
             name,
             symbol,
@@ -116,6 +116,10 @@ contract ApeFactory is Ownable {
             address(bondingCurve),
             STANDARD_RESERVE_RATIO
         );
+
+        if (msg.value > 0) {
+            bondingCurve.buy{value: msg.value}(msg.sender);
+        }
         return address(token);
     }
 

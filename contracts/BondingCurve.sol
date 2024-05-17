@@ -78,7 +78,62 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
         active = false;
     }
 
-    function buy() public payable nonReentrant returns (bool) {
+    // function buy(address buyer) public payable nonReentrant returns (bool) {
+    //     require(active, "bonding curve must be active");
+    //     require(msg.value > 0);
+
+    //     uint256 FEE_DENOMINATOR = factory.FEE_DENOMINATOR();
+    //     uint256 fee = msg.value / FEE_DENOMINATOR;
+    //     uint256 netValue = msg.value - fee;
+    //     uint256 refund = 0;
+    //     bool bondingCurveComplete = false;
+
+    //     uint256 requiredPoolBalanceToCompleteBondingCurve = amountToCompleteBondingCurve();
+
+    //     if (netValue >= requiredPoolBalanceToCompleteBondingCurve) {
+    //         uint256 usableMsgValue = (requiredPoolBalanceToCompleteBondingCurve *
+    //                 FEE_DENOMINATOR) / 100;
+    //         fee = usableMsgValue / FEE_DENOMINATOR;
+    //         netValue = usableMsgValue - fee;
+    //         refund = msg.value - usableMsgValue;
+    //         bondingCurveComplete = true;
+    //         deActivateBondingCurve();
+    //     }
+
+    //     uint256 currentCirculatingSupply = getCirculatingSupply();
+
+    //     uint256 tokensToTransfer = calculatePurchaseReturn(
+    //         currentCirculatingSupply,
+    //         poolBalance,
+    //         reserveRatio,
+    //         netValue
+    //     );
+    //     console.log("tokensToTransfer", tokensToTransfer);
+
+    //     poolBalance += netValue;
+    //     require(
+    //         token.transfer(buyer, tokensToTransfer),
+    //         "ERC20 transfer failed"
+    //     );
+
+    //     // Transfer fees to the fee recipient
+    //     address feeTo = factory.feeTo();
+    //     payable(feeTo).transfer(fee);
+
+    //     if (refund > 0) {
+    //         payable(msg.sender).transfer(refund);
+    //     }
+    //     // emit LogBuy(tokensToTransfer, msg.value, msg.sender);
+    //     emit LogBuy(tokensToTransfer, netValue, buyer);
+
+    //     if (bondingCurveComplete) {
+    //         completeBondingCurve();
+    //         payable(factory.liquidityFeeTo()).transfer(address(this).balance);
+    //     }
+    //     return true;
+    // }
+
+    function buyFor(address buyer) internal returns (bool) {
         require(active, "bonding curve must be active");
         require(msg.value > 0);
 
@@ -112,7 +167,7 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
 
         poolBalance += netValue;
         require(
-            token.transfer(msg.sender, tokensToTransfer),
+            token.transfer(buyer, tokensToTransfer),
             "ERC20 transfer failed"
         );
 
@@ -121,16 +176,26 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
         payable(feeTo).transfer(fee);
 
         if (refund > 0) {
-            payable(msg.sender).transfer(refund);
+            payable(buyer).transfer(refund);
         }
         // emit LogBuy(tokensToTransfer, msg.value, msg.sender);
-        emit LogBuy(tokensToTransfer, netValue, msg.sender);
+        emit LogBuy(tokensToTransfer, netValue, buyer);
 
         if (bondingCurveComplete) {
             completeBondingCurve();
             payable(factory.liquidityFeeTo()).transfer(address(this).balance);
         }
         return true;
+    }
+
+    function buy(address buyer) public payable nonReentrant returns (bool) {
+        require(msg.sender == address(factory),"You are not factory");
+        return buyFor(buyer);
+    }
+
+
+    function buy() public payable nonReentrant returns (bool) {
+        return buyFor(msg.sender);
     }
 
     function sell(uint256 sellAmount) public nonReentrant returns (bool) {
