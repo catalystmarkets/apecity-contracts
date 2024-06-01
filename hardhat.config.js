@@ -64,6 +64,12 @@ module.exports = {
       accounts: ["0x0817f17544818332106d1facc02e1c2596611bd01ac51649ea22a0acd4b409ba"],
       chainId: 8453
     },
+    base: {
+      // url: "https://base.llamarpc.com",
+      url: "https://base-rpc.publicnode.com",
+      accounts: ["0x0817f17544818332106d1facc02e1c2596611bd01ac51649ea22a0acd4b409ba","5c574e99acd1fc0ee232ce4c9dd29a59c9401bd850103726cddc762cb516a75a"],
+      chainId: 8453
+    },
     localhost: {
       url: "http://0.0.0.0:8545/",
       accounts: ["0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d","0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a"],

@@ -10,7 +10,7 @@ async function main() {
     // Replace these values with your desired parameters
     const _feeToSetter = deployer.address;
     const _feeTo = "0xdd0D4b40D8dCfB8741634b7432f53D36EAc1792B";
-    const _liquidityFeeTo = "0xAB00231b0060F4de69DE24fa761aa52566B5B8C6";
+    const _liquidityFeeTo = "0xdd0D4b40D8dCfB8741634b7432f53D36EAc1792B";
     const _totalTokenSupply = '1000000000';
     const _initialTokenSupply = ethers.parseEther('1000');
     const _initialPoolBalance = 8571428;
@@ -39,15 +39,16 @@ async function main() {
     await apeFactory.waitForDeployment();
     console.log("ApeFactory deployed to:", apeFactory.target);
 
-    await tenderly.verify({
-        address : apeFactory.target,
-        name: "ApeFactory",
-    });
+    // await tenderly.verify({
+    //     address : apeFactory.target,
+    //     name: "ApeFactory",
+    // });
 }
 
 main()
     .then(() => process.exit(0))
     .catch((error) => {
+        console.log("errorrrr",error);
         console.error(error);
         process.exit(1);
     });
@@ -73,3 +74,7 @@ main()
 // 0x5FbDB2315678afecb367f032d93F642f64180aa3
 // 0x43bbaC1E810E19C1608a26626FCc04D45f5918f5
 // 0xb4FBc25204d26C4a937F4CBa67087F70B21bb6c5   14142579
+
+
+// "npx hardhat run scripts/deployApeFactory.js --network base"
+// 0x7722B77e691ceA11047f030f1b128432A1a6FfCA
