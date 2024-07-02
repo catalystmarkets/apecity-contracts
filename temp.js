@@ -30,7 +30,8 @@
 const { ethers } = require("hardhat");
 
 async function main(){
-    console.log("getBlockNumber", await ethers.provider.getBlockNumber())
+    // console.log("getBlockNumber", await ethers.provider.getBlockNumber())
+    console.log('ethers.parseEther',ethers.parseEther('1'))
 }
 
 main()

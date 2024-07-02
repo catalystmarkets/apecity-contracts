@@ -18,7 +18,6 @@ async function main() {
     const _lpTransferEthAmount = ethers.parseEther('4');
     const _lpTransferFeeAmount = ethers.parseEther('0.200001');
     // const _uniswapV2RouterAddress = "0x1689E7B1F10000AE47eBfE339a4f69dECd19F602";//base-sepolia
-    // const _uniswapV2RouterAddress = "0x1689E7B1F10000AE47eBfE339a4f69dECd19F602";//base-sepolia
     const _uniswapV2RouterAddress = "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24";//base-tenderly (same as base)
 
     console.log("Deploying ApeFactory...");
