@@ -16,7 +16,8 @@ async function main() {
     const _initialPoolBalance = 8571428;
     const _reserveRatio = 500000;
     const _lpTransferEthAmount = ethers.parseEther('4');
-    const _lpTransferFeeAmount = ethers.parseEther('0.200001');
+    const _lpTransferFeeAmount = ethers.parseEther('0.100000');
+    const _lpTransferDevReward = ethers.parseEther('0.100001');
     // const _uniswapV2RouterAddress = "0x1689E7B1F10000AE47eBfE339a4f69dECd19F602";//base-sepolia
     const _uniswapV2RouterAddress = "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24";//base-tenderly (same as base)
 
@@ -32,6 +33,7 @@ async function main() {
         _reserveRatio,
         _lpTransferEthAmount,
         _lpTransferFeeAmount,
+        _lpTransferDevReward,
         _uniswapV2RouterAddress
     );
 
@@ -74,6 +76,13 @@ main()
 // 0x43bbaC1E810E19C1608a26626FCc04D45f5918f5
 // 0xb4FBc25204d26C4a937F4CBa67087F70B21bb6c5   14142579
 
-
 // "npx hardhat run scripts/deployApeFactory.js --network base"
 // 0x7722B77e691ceA11047f030f1b128432A1a6FfCA
+
+
+// "npx hardhat run scripts/deployApeFactory.js --network baseIdTenderly"
+// 0x89de37f99a0ea5a6594eda4ee567d97e1b8111d9   16648974
+
+// "npx hardhat run scripts/deployApeFactory.js --network base"
+// 0x205f875c5F69b3aE4d6cf9F3962D5187Ff18fAFD   16602339
+// 0x89de37F99A0eA5A6594Eda4eE567d97e1b8111D9   16654312

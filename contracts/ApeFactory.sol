@@ -27,6 +27,8 @@ contract ApeFactory is Ownable {
     uint256 private STANDARD_RESERVE_RATIO;
     uint256 private LP_TRANSFER_ETH_AMOUNT;
     uint256 private LP_TRANSFER_FEE_AMOUNT;
+    uint256 private LP_TRANSFER_DEV_REWARD;
+    
     address private UNISWAPV2_ROUTER_ADDRESS;
 
     event TokenCreated(
@@ -45,6 +47,7 @@ contract ApeFactory is Ownable {
         uint256 _standardReserveRatio,
         uint256 _lpTransferEthAmount,
         uint256 _lpTransferFeeAmount,
+        uint256 _lpTransferDevReward,
         address _uniswapV2RouterAddress
     ) Ownable(msg.sender) {
         feeToSetter = _feeToSetter;
@@ -57,6 +60,7 @@ contract ApeFactory is Ownable {
         STANDARD_RESERVE_RATIO = _standardReserveRatio;
         LP_TRANSFER_ETH_AMOUNT = _lpTransferEthAmount;
         LP_TRANSFER_FEE_AMOUNT = _lpTransferFeeAmount;
+        LP_TRANSFER_DEV_REWARD = _lpTransferDevReward;
         UNISWAPV2_ROUTER_ADDRESS = _uniswapV2RouterAddress;
     }
 
@@ -93,12 +97,14 @@ contract ApeFactory is Ownable {
             tokenURI
         );
         BondingCurve bondingCurve = new BondingCurve(
+            address(msg.sender),
             address(token),
             STANDARD_RESERVE_RATIO,
             INITIAL_TOKEN_SUPPLY,
             INITIAL_POOL_BALANCE,
             LP_TRANSFER_ETH_AMOUNT,
             LP_TRANSFER_FEE_AMOUNT,
+            LP_TRANSFER_DEV_REWARD,
             UNISWAPV2_ROUTER_ADDRESS
         );
 
@@ -143,13 +149,14 @@ contract ApeFactory is Ownable {
         FEE_DENOMINATOR = _feeDenominator;
     }
 
-    function setBondingCurveCurveVariables(
+    function setBondingCurveVariables(
         uint256 _totalTokenSupply,
         uint256 _initialTokenSupply,
         uint256 _initialPoolBalance,
         uint256 _standardReserveRatio,
         uint256 _lpTransferEthAmount,
-        uint256 _lpTransferFeeAmount
+        uint256 _lpTransferFeeAmount,
+        uint256 _lpTransferDevReward
     ) external onlyOwner {
         TOTAL_TOKEN_SUPPLY = _totalTokenSupply;
         INITIAL_TOKEN_SUPPLY = _initialTokenSupply;
@@ -157,6 +164,7 @@ contract ApeFactory is Ownable {
         STANDARD_RESERVE_RATIO = _standardReserveRatio;
         LP_TRANSFER_ETH_AMOUNT = _lpTransferEthAmount;
         LP_TRANSFER_FEE_AMOUNT = _lpTransferFeeAmount;
+        LP_TRANSFER_DEV_REWARD = _lpTransferDevReward;
     }
 
     function setLPRouterAddress(

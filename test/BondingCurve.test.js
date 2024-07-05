@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 
 // const UNISWAPV2_ROUTER_CONTRACT = 0x4752ba5dbc23f44d87826276bf6fd6b1c372ad24
 
-describe.only("BondingCurve", function () {
+describe("BondingCurve", function () {
     let bondingCurve;
     let token;
     let owner;

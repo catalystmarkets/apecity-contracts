@@ -11,3 +11,19 @@ REPORT_GAS=true npx hardhat test
 npx hardhat node
 npx hardhat ignition deploy ./ignition/modules/Lock.js
 ```
+
+
+For testing
+
+just configure hardhat network in hardhat.config.js 
+and especially please do it on fork if you want to check realtime update.
+and run
+```shell
+npx hardhat test --network hardhat
+```
+
+For deployment
+configure network in which it should be deployed and then run script
+```shell
+npx hardhat run scripts/deployApeFactory.js --network hardhat
+```

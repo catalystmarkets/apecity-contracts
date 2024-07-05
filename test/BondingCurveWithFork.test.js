@@ -13,6 +13,7 @@ describe.only("BondingCurve", function () {
     let _feeToSetter;
     let _feeTo;
     let _liquidityFeeTo;
+    let _tokenDev;
     let _totalTokenSupply;
     let _initialTokenSupply;
     let _initialPoolBalance;
@@ -26,11 +27,14 @@ describe.only("BondingCurve", function () {
     let uniswapV2Factory;
 
     beforeEach(async function () {
-        let [owner, feeToSetter, feeTo, liquidityFeeTo, ..._otherAccounts] = await ethers.getSigners();
+        // let [owner, feeToSetter, feeTo, liquidityFeeTo, ..._otherAccounts] = await ethers.getSigners();
+        let signers = await ethers.getSigners();
+        let [owner, feeToSetter, feeTo, liquidityFeeTo, tokenDev, ..._otherAccounts] = signers;
         otherAccounts = _otherAccounts
         _feeToSetter = feeToSetter.address;
         _feeTo = feeTo.address;
         _liquidityFeeTo = liquidityFeeTo.address;
+        _tokenDev = tokenDev.address;
         // _totalTokenSupply = ethers.parseEther('1000000000');
         // _initialTokenSupply = ethers.parseEther('1000');
         // _initialPoolBalance = 1720281043;
@@ -44,7 +48,8 @@ describe.only("BondingCurve", function () {
         _initialPoolBalance = 8571428;
         _reserveRatio = 500000;
         _lpTransferEthAmount = ethers.parseEther('4');
-        _lpTransferFeeAmount = ethers.parseEther('0.200001');
+        _lpTransferFeeAmount = ethers.parseEther('0.100000');
+        _lpTransferDevReward = ethers.parseEther('0.100001');
         _uniswapV2RouterAddress = "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24";
 
         const ApeFactoryContract = await ethers.getContractFactory("ApeFactory");
@@ -59,6 +64,7 @@ describe.only("BondingCurve", function () {
             _initialPoolBalance,
             _lpTransferEthAmount,
             _lpTransferFeeAmount,
+            _lpTransferDevReward,
             _uniswapV2RouterAddress
         )
         ApeFactory = await ApeFactoryContract.deploy(
@@ -71,25 +77,30 @@ describe.only("BondingCurve", function () {
             _reserveRatio,
             _lpTransferEthAmount,
             _lpTransferFeeAmount,
+            _lpTransferDevReward,
             _uniswapV2RouterAddress
         );
         await ApeFactory.waitForDeployment();
 
+        console.log('ApeFactory.target',ApeFactory.target)
 
-        await ApeFactory.setBondingCurveCurveVariables(
+        await ApeFactory.setBondingCurveVariables(
             _totalTokenSupply,
             _initialTokenSupply,
             _initialPoolBalance,
             _reserveRatio,
             _lpTransferEthAmount,
-            _lpTransferFeeAmount
+            _lpTransferFeeAmount,
+            _lpTransferDevReward
         )
 
         const tokenName = "ApeCoin";
         const tokenSymbol = "APE";
         const imageURL = "APE";
 
-        let createdToken = await ApeFactory.createToken(tokenName, tokenSymbol, imageURL)
+        let tokenDevEthBalanceBefore = await ethers.provider.getBalance(_tokenDev);
+        console.log('tokenDevEthBalanceBefore : ',tokenDevEthBalanceBefore)
+        let createdToken = await ApeFactory.connect(tokenDev).createToken(tokenName, tokenSymbol, imageURL)
 
         tokenAddress = await ApeFactory.allTokens(0);
         const ERC20FixedSupply = await ethers.getContractFactory("ERC20FixedSupply");
@@ -114,8 +125,15 @@ describe.only("BondingCurve", function () {
         // buyer is buying here
         let buyer = otherAccounts[0];
         let buyAmount = ethers.parseEther("3.03");
-        await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
-            .to.emit(bondingCurve, "LogBuy");
+
+        // let buyTx = await bondingCurve["buy()"]({ value: amountToBuy });
+
+        await expect(bondingCurve.connect(buyer)["buy()"]({ value: buyAmount }))
+             .to.emit(bondingCurve, "LogBuy");
+
+             console.log('it passed')
+        // await expect(bondingCurve.connect(buyer)["buy()"]({ value: buyAmount }))
+        //     .to.emit(bondingCurve, "LogBuy");
 
         let requireAmountToCompleteBondingCurve = await bondingCurve.amountToCompleteBondingCurve();
         let excessAmount = ethers.parseEther("1");
@@ -125,7 +143,7 @@ describe.only("BondingCurve", function () {
         let liquidityFeeToBalanceBC = await ethers.provider.getBalance(_liquidityFeeTo);
         console.log("liquidityFeeToBalanceBC",liquidityFeeToBalanceBC)
         // bonding curve will be completed on this buy
-        await bondingCurve.connect(buyer).buy({ value: buyAmount })
+        await bondingCurve.connect(buyer)["buy()"]({ value: buyAmount })
 
         let userEthBalanceAfterBuy = await ethers.provider.getBalance(buyer);
         console.log("userEthBalanceAfterBuy", ethers.formatEther(userEthBalanceAfterBuy))
@@ -170,7 +188,7 @@ describe.only("BondingCurve", function () {
         // buyer is buying here
         let buyer = otherAccounts[0];
         let buyAmount = ethers.parseEther("3.03");
-        await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
+        await expect(bondingCurve.connect(buyer)["buy()"]({ value: buyAmount }))
             .to.emit(bondingCurve, "LogBuy");
 
         let requireAmountToCompleteBondingCurve = await bondingCurve.amountToCompleteBondingCurve();
@@ -181,11 +199,11 @@ describe.only("BondingCurve", function () {
         let liquidityFeeToBalanceBC = await ethers.provider.getBalance(_liquidityFeeTo);
         console.log("liquidityFeeToBalanceBC", liquidityFeeToBalanceBC)
         // bonding curve will be completed on this buy
-        // await bondingCurve.connect(buyer).buy({ value: buyAmount })
+        // await bondingCurve.connect(buyer)["buy()"]({ value: buyAmount })
 
         
 
-        await expect(await bondingCurve.connect(buyer).buy({ value: buyAmount }))
+        await expect(await bondingCurve.connect(buyer)["buy()"]({ value: buyAmount }))
             .to.emit(bondingCurve, "BondingCurveComplete");
 
         let userEthBalanceAfterBuy = await ethers.provider.getBalance(buyer);
@@ -220,10 +238,14 @@ describe.only("BondingCurve", function () {
         console.log("token.balanceOf(lpTokenContract.target) ", await lpPairContract.getReserves())
 
 
-        await expect(bondingCurve.connect(buyer).buy({ value: buyAmount }))
+        await expect(bondingCurve.connect(buyer)["buy()"]({ value: buyAmount }))
             .to.be.revertedWith('bonding curve must be active');
 
         await expect(bondingCurve.connect(buyer).sell(ethers.parseEther('1')))
             .to.be.revertedWith('bonding curve must be active');
+
+
+        let tokenDevEthBalanceAfter = await ethers.provider.getBalance(_tokenDev);
+        console.log('tokenDevEthBalanceAfter : ',tokenDevEthBalanceAfter)
     })
 });

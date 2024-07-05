@@ -24,6 +24,9 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
     uint256 private immutable INITIAL_TOKEN_SUPPLY;
     uint256 private immutable LP_TRANSFER_ETH_AMOUNT;
     uint256 private immutable LP_TRANSFER_FEE_AMOUNT;
+    uint256 private immutable LP_TRANSFER_DEV_REWARD;
+
+    address public immutable TOKEN_DEV;
 
     IUniswapV2Router02 public uniswapV2Router;
     IApeFactory public factory;
@@ -45,14 +48,17 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
     );
 
     constructor(
+        address _tokenDev,
         address _tokenAddress,
         uint256 _reserveRatio,
         uint256 _initialSupply,
         uint256 _initialPoolBalance,
         uint256 _ethAmountToLP,
         uint256 _feeAmountAtCurveComplete,
+        uint256 _rewardAmountToDev,
         address _uniswapRouter
     ) {
+        TOKEN_DEV = _tokenDev;
         INITIAL_TOKEN_SUPPLY = _initialSupply;
         INITIAL_POOL_BALANCE = _initialPoolBalance;
         poolBalance = _initialPoolBalance;
@@ -63,6 +69,7 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
 
         LP_TRANSFER_ETH_AMOUNT = _ethAmountToLP;
         LP_TRANSFER_FEE_AMOUNT = _feeAmountAtCurveComplete;
+        LP_TRANSFER_DEV_REWARD = _rewardAmountToDev;
 
         factory = IApeFactory(msg.sender);
         uniswapV2Router = IUniswapV2Router02(_uniswapRouter);
@@ -183,6 +190,7 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
 
         if (bondingCurveComplete) {
             completeBondingCurve();
+            payable(TOKEN_DEV).transfer(address(this).balance / 2);
             payable(factory.liquidityFeeTo()).transfer(address(this).balance);
         }
         return true;
@@ -273,6 +281,6 @@ contract BondingCurve is ApeFormula, ReentrancyGuard {
     }
 
     function amountToCompleteBondingCurve() public view returns (uint256) {
-        return LP_TRANSFER_ETH_AMOUNT + LP_TRANSFER_FEE_AMOUNT - poolBalance;
+        return LP_TRANSFER_ETH_AMOUNT + LP_TRANSFER_FEE_AMOUNT + LP_TRANSFER_DEV_REWARD - poolBalance;
     }
 }
