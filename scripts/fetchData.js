@@ -3,7 +3,8 @@ const { ethers } = require("hardhat");
 async function main() {
 
     //base-tenderly
-    const apeFactoryContractAddress = "0x205f875c5f69b3ae4d6cf9f3962d5187ff18fafd"
+    // const apeFactoryContractAddress = "0x205f875c5f69b3ae4d6cf9f3962d5187ff18fafd"
+    const apeFactoryContractAddress = "0x0fDc7bf21a167A20C49FcA41CCbc3ABa354AcfbD"
 
     const ApeFactory = await ethers.getContractAt("ApeFactory", apeFactoryContractAddress);
 

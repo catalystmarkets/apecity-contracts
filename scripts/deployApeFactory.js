@@ -60,33 +60,6 @@ main()
 // npx hardhat run scripts/deployApeFactory.js --network baseTenderly
 //     `
 
-// "npx hardhat run scripts/deployApeFactory.js --network hardhat"
-// "npx hardhat run scripts/deployApeFactory.js --network baseSepolia"
-// "npx hardhat run scripts/deployApeFactory.js --network baseTenderly"
-// "npx hardhat run scripts/deployApeFactory.js --network localhost"
-
-// "npx hardhat run scripts/deployApeFactory.js --network baseIdTenderly"
-// 0x7722b77e691cea11047f030f1b128432a1a6ffca
-
-// base-tenderly ape factory address
-// 0xDeca67A17195Db554BBa847AD8b5AcBb18e2C8a3
-
-//localhost factory address
-// 0x5FbDB2315678afecb367f032d93F642f64180aa3
-// 0x43bbaC1E810E19C1608a26626FCc04D45f5918f5
-// 0xb4FBc25204d26C4a937F4CBa67087F70B21bb6c5   14142579
-
-// "npx hardhat run scripts/deployApeFactory.js --network base"
-// 0x7722B77e691ceA11047f030f1b128432A1a6FfCA
-
-
-// "npx hardhat run scripts/deployApeFactory.js --network baseIdTenderly"
-// 0x89de37f99a0ea5a6594eda4ee567d97e1b8111d9   16648974
-
-// "npx hardhat run scripts/deployApeFactory.js --network base"
-// 0x89de37F99A0eA5A6594Eda4eE567d97e1b8111D9   16654312
-
-
-// "npx hardhat run scripts/deployApeFactory.js --network baseTenderly"
-// 0x0fDc7bf21a167A20C49FcA41CCbc3ABa354AcfbD   16693931
+// "npx hardhat run scripts/deployApeFactory.js --network tenderly"
+// 0x0fDc7bf21a167A20C49FcA41CCbc3ABa354AcfbD   17512642
 

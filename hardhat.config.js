@@ -63,6 +63,11 @@ module.exports = {
       accounts: ["0x0817f17544818332106d1facc02e1c2596611bd01ac51649ea22a0acd4b409ba","5c574e99acd1fc0ee232ce4c9dd29a59c9401bd850103726cddc762cb516a75a"],
       chainId: 8453
     },
+    tenderly: {
+        url: "https://virtual.base.rpc.tenderly.co/3f03ea4a-aebd-445c-94ca-22dee8209cb8",
+        accounts: ["0x0817f17544818332106d1facc02e1c2596611bd01ac51649ea22a0acd4b409ba","5c574e99acd1fc0ee232ce4c9dd29a59c9401bd850103726cddc762cb516a75a"],
+        chainId: 8455
+    },
     base: {
       // url: "https://base.llamarpc.com",
       url: "https://base-rpc.publicnode.com",
