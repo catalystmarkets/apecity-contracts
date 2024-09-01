@@ -68,6 +68,11 @@ module.exports = {
         accounts: ["0x0817f17544818332106d1facc02e1c2596611bd01ac51649ea22a0acd4b409ba","5c574e99acd1fc0ee232ce4c9dd29a59c9401bd850103726cddc762cb516a75a"],
         chainId: 8455
     },
+    merlintestnet: {
+        url: "https://testnet-rpc.merlinchain.io/",
+        accounts: ["0x0817f17544818332106d1facc02e1c2596611bd01ac51649ea22a0acd4b409ba","5c574e99acd1fc0ee232ce4c9dd29a59c9401bd850103726cddc762cb516a75a"],
+        chainId: 686868
+    },
     base: {
       // url: "https://base.llamarpc.com",
       url: "https://base-rpc.publicnode.com",

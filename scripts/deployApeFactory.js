@@ -63,3 +63,9 @@ main()
 // "npx hardhat run scripts/deployApeFactory.js --network tenderly"
 // 0x0fDc7bf21a167A20C49FcA41CCbc3ABa354AcfbD   17512642
 
+// "npx hardhat run scripts/deployApeFactory.js --network merlintestnet"
+// 0x7722B77e691ceA11047f030f1b128432A1a6FfCA 10146215
+// 0x89de37F99A0eA5A6594Eda4eE567d97e1b8111D9 11097783
+
+// https://testnet-scan.merlinchain.io/tx/0xd8a60763fe63c20f0a3ba7c56930b19dd2d7202b8f27d7e69f970ae6ce7fae21
+
